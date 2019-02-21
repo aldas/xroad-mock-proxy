@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+if [[ -z "$(which golint)" ]]; then
+	echo "golint not found, please run: go get github.com/golang/lint/golint"
+	env
+	exit 1
+fi
+
+STAGED_GO_FILES=$(git diff --cached --name-only | grep ".go$")
+
+if [[ "$STAGED_GO_FILES" = "" ]]; then
+  exit 0
+fi
+
+PASS=true
+
+for FILE in $STAGED_GO_FILES
+do
+  if [[ ! -f ${FILE} ]]; then
+    continue
+  fi
+
+  go tool vet $FILE
+  if [[ $? != 0 ]]; then
+    PASS=false
+  fi
+
+  golint -set_exit_status $FILE
+  if [[ $? != 0 ]]; then
+    PASS=false
+  fi
+done
+
+if ! $PASS; then
+  printf "COMMIT FAILED\n"
+  exit 1
+else
+  printf "COMMIT SUCCEEDED\n"
+fi
+
+exit 0

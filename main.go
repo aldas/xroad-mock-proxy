@@ -1,34 +1,30 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
+	"github.com/aldas/xroad-mock-proxy/cmd"
+	"github.com/rs/zerolog"
+	"os"
 	"time"
 )
 
-func main() {
-	targetScheme := "https"
-	targetHost := "www.google.com"
+var (
+	version = "undefined"
+	build   = "undefined"
+)
 
-	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
-		Scheme: targetScheme,
-		Host:   targetHost,
+func main() {
+	logger := newLogger()
+	cmd.NewRootCmd(logger, version, build).Execute()
+}
+
+func newLogger() *zerolog.Logger {
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger().Sample(&zerolog.BurstSampler{
+		Burst:       5,
+		Period:      500 * time.Millisecond,
+		NextSampler: &zerolog.BasicSampler{N: 100},
 	})
 
-	proxy.FlushInterval = 1 * time.Second
-
-	proxy.Director = func(r *http.Request) {
-		// To rewrite Host headers, we need to use ReverseProxy with a custom Director policy.
-		r.Host = targetHost
-		r.URL.Host = r.Host
-		r.URL.Scheme = targetScheme
-	}
-
-	http.Handle("/", proxy)
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatalf("failed to server: %v", err)
-	}
+	return &logger
 }

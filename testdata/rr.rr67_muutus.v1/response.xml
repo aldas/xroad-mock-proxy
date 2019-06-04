@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                   xmlns:id="http://x-road.eu/xsd/identifiers" xmlns:prod="http://rr.x-road.eu/producer"
+                   xmlns:xrd="http://x-road.eu/xsd/xroad.xsd"
+>
+    <SOAP-ENV:Header>
+        <xrd:client id:objectType="SUBSYSTEM">
+            <id:xRoadInstance>ee-test</id:xRoadInstance>
+            <id:memberClass>GOV</id:memberClass>
+            <id:memberCode>70009999</id:memberCode>
+            <id:subsystemCode>mocksystem</id:subsystemCode>
+        </xrd:client>
+        <xrd:service id:objectType="SERVICE">
+            <id:xRoadInstance>ee-test</id:xRoadInstance>
+            <id:memberClass>GOV</id:memberClass>
+            <id:memberCode>70008899</id:memberCode>
+            <id:subsystemCode>rr</id:subsystemCode>
+            <id:serviceCode>RR67_muutus</id:serviceCode>
+            <id:serviceVersion>v1</id:serviceVersion>
+        </xrd:service>
+        <xrd:userId>EE11111111111</xrd:userId>
+        <xrd:id>HaNq1ke0X2QQmAkPk3eEoA</xrd:id>
+        <xrd:requestHash algorithmId="http://www.w3.org/2001/04/xmlenc#sha512">
+            y9ZVsuWViRuDAjgba6QpIRrWP6dHFK7iX6oKP4SftbOQiNCOb1CiYh4XaJsuxHkOWWv3/ajNG3cfTZW5hVaPVw==
+        </xrd:requestHash>
+        <xrd:protocolVersion>4.0</xrd:protocolVersion>
+    </SOAP-ENV:Header>
+    <SOAP-ENV:Body>
+        <prod:RR67_muutusResponse>
+            <request>
+                <cAlgKpv>16.01.2018</cAlgKpv>
+                <cAlgKell>14:55:09</cAlgKell>
+                <cLoppKpv>17.01.2018</cLoppKpv>
+                <cLoppKell>00:20:08</cLoppKell>
+                <cMuutused>1,2,3,4,7,9,10,12,22,23,24,25,26</cMuutused>
+            </request>
+            <response>
+                <ttKood>
+                    <ttKoodid>
+                        <ttKoodid.cIsikukood>38012010922</ttKoodid.cIsikukood>
+                        <ttKoodid.cUusKood/>
+                    </ttKoodid>
+                </ttKood>
+            </response>
+        </prod:RR67_muutusResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

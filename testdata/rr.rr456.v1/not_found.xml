@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                   xmlns:id="http://x-road.eu/xsd/identifiers" xmlns:prod="http://rr.x-road.eu/producer"
+                   xmlns:xrd="http://x-road.eu/xsd/xroad.xsd"
+>
+    <SOAP-ENV:Header>
+        <xrd:client id:objectType="SUBSYSTEM">
+            <id:xRoadInstance>ee-test</id:xRoadInstance>
+            <id:memberClass>GOV</id:memberClass>
+            <id:memberCode>70009999</id:memberCode>
+            <id:subsystemCode>mocksystem</id:subsystemCode>
+        </xrd:client>
+        <xrd:service id:objectType="SERVICE">
+            <id:xRoadInstance>ee-test</id:xRoadInstance>
+            <id:memberClass>GOV</id:memberClass>
+            <id:memberCode>70008899</id:memberCode>
+            <id:subsystemCode>rr</id:subsystemCode>
+            <id:serviceCode>RR456</id:serviceCode>
+            <id:serviceVersion>v1</id:serviceVersion>
+        </xrd:service>
+        <xrd:userId>EE11111111111</xrd:userId>
+        <xrd:id>{{.MD5}}</xrd:id>
+        <xrd:requestHash algorithmId="http://www.w3.org/2001/04/xmlenc#sha512">
+            YPZLqbqUYklQRDf/7NNZHmqHnFmCTwlr5j2cpiVRyPrkJ5OPzMiHQt5CAqJbvAYq2b573TojtnJOg5D9cWjdWQ==
+        </xrd:requestHash>
+        <xrd:protocolVersion>4.0</xrd:protocolVersion>
+    </SOAP-ENV:Header>
+    <SOAP-ENV:Body>
+        <prod:RR456Response>
+            <request>
+                <Isikukood>{{.Identity}}</Isikukood>
+            </request>
+            <response>
+                <faultCode>10027</faultCode>
+                <faultString>Isik puudub RRis. (10027)</faultString>
+            </response>
+        </prod:RR456Response>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

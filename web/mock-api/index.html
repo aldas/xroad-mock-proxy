@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mock rules</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" charset="utf8"
+            src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+
+    <style>
+        td.details-control {
+            cursor: pointer;
+        }
+
+        td.details-control span {
+            font-size: large;
+            font-weight: bold;
+        }
+
+        .details {
+            margin-left: 2em;
+        }
+
+        .form-details div {
+            margin-bottom: 0.5em;
+        }
+
+        .form-details input {
+            width: 100%;
+        }
+
+        #form-template {
+            display: none;
+        }
+
+        .add-rule {
+            margin: 1em;
+            padding: 1em;
+            border-style: solid;
+        }
+
+        textarea {
+            background: aliceblue;
+            max-width: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Rules for mock responses</h1>
+<div>
+    <button type="button" id="add-rule-btn">Add new rule</button>
+</div>
+<div id="add-rule"></div>
+
+<table id="rules" class="display" style="width:100%">
+    <thead>
+    <tr>
+        <th>&nbsp;</th>
+        <th>Service</th>
+        <th>Priority</th>
+        <th>Matcher regexps</th>
+        <th>Response status</th>
+    </tr>
+    </thead>
+</table>
+
+<div id="form-template">
+    <form class="form-details">
+        <input name="id" type="number" style="display: none">
+        <div>
+            <span>Service:</span>
+            <input name="service" type="text" maxlength="100">
+        </div>
+        <div>
+            <span>Priority:</span>
+            <input name="priority" type="number" min="1">
+        </div>
+        <div>
+            <!-- <span>Identity Regex (<a href="https://regex101.com/?flavor=golang" target="_blank">tester</a>):</span> -->
+            <span>Identity Regex (<a href="https://regex-golang.appspot.com/assets/html/index.html" target="_blank">tester</a>):</span>
+            <input name="identity_regex" type="text">
+        </div>
+        <div>
+            <span>Matcher regex (each regex on separate line):</span>
+            <textarea name="matcher_regexes" cols="180" rows="2"></textarea>
+        </div>
+        <div>
+            <span>Response template:</span>
+            <textarea name="template" cols="180" rows="20"></textarea>
+        </div>
+        <div>
+            <span>Response status code:</span>
+            <input name="response_status" type="number" min="1">
+        </div>
+        <div>
+            <span title="For example: '300ms', '2s' or '2m'. Valid time units are 'ns', 'us', 'ms', 's', 'm', 'h'.">Response delay:</span>
+            <input name="timeout_duration" type="text">
+        </div>
+        <div>
+            <button name="submit" type="submit">Submit</button>
+            <button name="reset" type="reset">Reset</button>
+            <button name="remove" type="button">Remove</button>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    function b64DecodeUnicode(str) {
+        if (!str) {
+            return "";
+        }
+        // see: https://stackoverflow.com/a/30106551
+        return decodeURIComponent(atob(str).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    }
+
+    function b64EncodeUnicode(str) {
+        if (!str) {
+            return "";
+        }
+        // see: https://stackoverflow.com/a/30106551
+
+        // first we use encodeURIComponent to get percent-encoded UTF-8,
+        // then we convert the percent encodings into raw bytes which can be fed into btoa.
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+            function toSolidBytes(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            }));
+    }
+
+    $(document).ready(function () {
+        $("#add-rule-btn").on("click", toggleAdd);
+
+        var table = $('#rules').DataTable(
+            {
+                "paging": false,
+                "ajax": {
+                    "url": "api/rules",
+                },
+                "order": [[1, 'desc'], [2, 'desc']],
+                "columns": [
+                    {
+                        "className": 'details-control',
+                        "orderable": false,
+                        "data": null,
+                        "defaultContent": '<span>+<span>'
+                    },
+                    {"data": "service"},
+                    {"data": "priority"},
+                    {"data": "matcher_regexes"},
+                    {"data": "response_status"},
+                ],
+                "columnDefs": [
+                    {
+                        "render": function (data) {
+                            return data && data.map(function (i) {
+                                return $('<span/>').text(i).html();
+                            }).join("<br/>");
+                        },
+                        "targets": 3
+                    },
+                ]
+            }
+        );
+
+        $('#rules tbody').on('click', 'td.details-control', function () {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                row.child(formatDetails(row.data())).show();
+                tr.addClass('shown');
+            }
+        });
+
+        function formatDetails(rowData) {
+            var div = $('<div class="details"/>').text('Loading...');
+
+            $.ajax({
+                url: 'api/rules/' + rowData.id,
+                dataType: 'json',
+                success: function (json) {
+                    var form = $("#form-template").clone().attr("id", "rule_" + json.data.id);
+                    dataToForm(json.data, form);
+                    div.empty().append(form);
+                },
+                error: function (json) {
+                    console.log(json);
+                    div.empty().append("Failed")
+                }
+            });
+
+            return div;
+        }
+
+        function dataToForm(data, form) {
+            var isAdd = !data.id;
+
+            form.find("input[name='id']").val(data.id);
+            form.find("input[name='service']").val(data.service);
+            form.find("input[name='priority']").val(data.priority);
+            form.find("input[name='identity_regex']").val(data.identity_regex);
+
+            var matcherRegexs = data.matcher_regexes || [];
+            var matcherRegexpElem = form.find("textarea[name='matcher_regexes']");
+            matcherRegexpElem.val(matcherRegexs.join('\n'));
+            matcherRegexpElem.attr("rows", matcherRegexs.length > 2 ? matcherRegexs.length : 2);
+
+            form.find("textarea[name='template']").text(b64DecodeUnicode(data.template));
+
+            form.find("input[name='response_status']").val(data.response_status);
+            form.find("input[name='timeout_duration']").val(data.timeout_duration);
+
+            if (isAdd) {
+                form.find("button[name='remove']").hide();
+            } else {
+                form.find("button[name='reset']").hide();
+
+                var removeBtn = form.find("button[name='remove']");
+                removeBtn.data('rule_id', data.id);
+                removeBtn.on('click', removeRule);
+            }
+
+            if (!!data.read_only) {
+                form.find("button[name='remove']").hide();
+                form.find("button[name='submit']").hide();
+            } else {
+                form.on("submit", submitForm);
+            }
+        }
+
+        function submitForm(evt) {
+            if (evt.preventDefault) evt.preventDefault();
+
+            var data = {};
+
+            var ID = $(this).find("input[name='id']").val();
+            if (ID) {
+                data.id = parseInt(ID, 10);
+            }
+            data.service = $(this).find("input[name='service']").val();
+            data.priority = parseInt($(this).find("input[name='priority']").val(), 10);
+            data.identity_regex = $(this).find("input[name='identity_regex']").val();
+
+            data.matcher_regexes = $(this).find("textarea[name='matcher_regexes']").val().split('\n');
+            data.template = b64EncodeUnicode($(this).find("textarea[name='template']").val());
+
+            data.response_status = parseInt($(this).find("input[name='response_status']").val(), 10);
+            data.timeout_duration = $(this).find("input[name='timeout_duration']").val();
+
+            console.log(data);
+            $.ajax({
+                method: data.id ? 'PUT' : 'POST',
+                url: 'api/rules' + (data.id ? '/' + data.id : ''),
+                data: JSON.stringify(data),
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                success: function (json) {
+                    console.log("success");
+                    console.log(json);
+                    location.reload();
+                },
+                error: function (response) {
+                    alert(errorText(response))
+                }
+            });
+        }
+
+        function toggleAdd() {
+            if ($("#rule_add").length) {
+                $("#add-rule").empty();
+                return;
+            }
+
+            var container = $("#add-rule").empty();
+            var form = $("#form-template").clone().attr("id", "rule_add").addClass("add-rule");
+            dataToForm({}, form);
+            container.append(form);
+        }
+
+        function removeRule() {
+            var ID = $(this).data('rule_id');
+            $.ajax({
+                method: 'DELETE',
+                url: 'api/rules/' + ID,
+                contentType: "application/json; charset=utf-8",
+                success: function (json) {
+                    console.log("success");
+                    console.log(json);
+                    location.reload();
+                },
+                error: function (response) {
+                    alert(errorText(response))
+                }
+            });
+        }
+
+        function errorText(response) {
+            if (response.responseJSON && response.responseJSON.message) {
+                return response.responseJSON.message;
+            }
+            return response.statusText
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+[Unit]
+Description=X-road mock/proxy server
+ConditionPathExists=/opt/app/xroad-mock-proxy/xroad-mock-proxy
+After=network.target
+
+[Service]
+Type=simple
+User=xroad
+Group=xroad
+LimitNOFILE=1024
+
+Restart=on-failure
+RestartSec=10
+
+WorkingDirectory=/opt/app/xroad-mock-proxy
+ExecStart=/opt/app/xroad-mock-proxy/xroad-mock-proxy
+
+EnvironmentFile=-/etc/default/xroad-mock-proxy
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=xroad-mock-proxy
+
+[Install]
+WantedBy=multi-user.target

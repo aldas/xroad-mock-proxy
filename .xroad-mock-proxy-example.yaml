@@ -1,0 +1,86 @@
+# NB: A YAML file cannot contain tabs as indentation
+
+proxy:
+  server:
+    address: 'localhost:18080'
+    context_path: '/cgi-bin/consumer_proxy'
+    # (optional) tls - https/tls configuration for proxy. If omitted proxy will be served on plain HTTP
+    tls:
+      force_client_cert_auth: true
+      ca_file: './certificates/server-cert.pem'
+      cert_file: './certificates/server-cert.pem'
+      key_file: './certificates/server-key.pem'
+      key_password: 'SuperSecret1'
+  api:
+    enabled: true
+    address: 'localhost:18081'
+    context_path: '/proxy'
+    assets_directory: './web/proxy-api/'
+    tls:
+      force_client_cert_auth: false
+      ca_file: './certificates/api-server-cert.pem'
+      cert_file: './certificates/api-server-cert.pem'
+      key_file: './certificates/api-server-key.pem'
+      key_password: 'SuperSecret1'
+  storage:
+    requests:
+      size: 100
+      expiration: '1.5h'
+    rules:
+      size: 200
+  routes:
+    servers:
+      - name: 'real-xroad'
+        is_default: true
+        address: 'https://localhost:443'
+        tls:
+          ca_file: './certificates/xroad-cert.pem'
+          cert_file: './certificates/xroad-cert.pem'
+          key_file: './certificates/xroad-key.pem'
+          key_password: 'SuperSecret1'
+      - name: 'mock'
+        address: 'http://localhost:18082'
+    rules:
+      - server: 'mock'
+        service: 'rr.RR456.v1'
+        priority: 1000
+        request_matcher_remote_addr:
+          - '127.0.0.1'
+          - '127.0.0'
+        request_matcher_regexes:
+          - '(?mi)<isikukood>\d{3}1102\d{4}<\/isikukood>'
+        request_replacements:
+          - regex: '(?mi)(\<iden:xRoadInstance\>)(.*?)(\<\/iden:xRoadInstance\>)'
+            value: '${1}ee-proxy${3}'
+        response_replacements:
+          - regex: '(?mi)(xRoadInstance>ee-test)'
+            value: 'xRoadInstance>ee-mock'
+
+mock:
+  enabled: true
+  address: 'localhost:18082'
+  context_path: ''
+  web_assets_directory: './web/mock-api/'
+  is_debug: true
+  debug_path: 'debug/'
+  storage:
+    size: 200
+  # (optional) tls - https/tls configuration for mock and its API. If omitted mock will be served on plain HTTP
+  tls:
+    force_client_cert_auth: false
+    ca_file: ''
+    cert_file: ''
+    key_file: ''
+    key_password: ''
+  rules:
+    - service: 'rr.rr456.v1'
+      priority: 1000
+      matcher_regexes:
+        - '(?mi)<isikukood>\d{3}1102\d{4}<\/isikukood>'
+      identity_regex: '(?mi)<isikukood>(\d{11})<\/isikukood>'
+      template_file: './mock/rr.rr456.v1/response.xml'
+      timeout_duration: '1s'
+    - service: 'rr.rr456.v1'
+      priority: 900
+      template_file: './mock/rr.rr456.v1/not_found.xml'
+      response_status: 404

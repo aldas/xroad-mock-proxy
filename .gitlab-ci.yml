@@ -1,0 +1,55 @@
+image: golang:1.12
+stages:
+  - prepare
+  - build
+  - check
+
+cache:
+  key: ".cache-$CI_COMMIT_REF_NAME"
+  paths:
+    - $CI_PROJECT_DIR/.cache
+
+variables:
+  GOPATH: $CI_PROJECT_DIR/.cache
+
+before_script:
+  - mkdir -p $CI_PROJECT_DIR/.cache
+  - export PATH="$GOPATH/bin:$PATH"
+
+Go mod:
+  stage: prepare
+  script:
+    - go mod download
+
+build:
+  stage: build
+  script:
+    - make build
+  artifacts:
+    name: "$CI_JOB_NAME"
+    paths:
+      - xroad-mock-proxy
+    expire_in: 30 days
+
+test:
+  stage: check
+  cache:
+    policy: pull
+  coverage: '/\(statements\)\s+(\d+.\d+\%)/'
+  script:
+    - make coverhtml
+
+lint:
+  stage: check
+  cache:
+    policy: pull
+  script:
+    - make init
+    - make lint
+
+vet:
+  stage: check
+  cache:
+    policy: pull
+  script:
+    - make vet

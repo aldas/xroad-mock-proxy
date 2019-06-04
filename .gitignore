@@ -1,5 +1,6 @@
 .idea/
 
+.xroad-mock-proxy.yaml
 coverage/
 xroad-mock-proxy
 

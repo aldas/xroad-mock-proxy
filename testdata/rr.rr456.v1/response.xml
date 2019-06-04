@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:id="http://x-road.eu/xsd/identifiers" xmlns:prod="http://rr.x-road.eu/producer" xmlns:repr="http://x-road.eu/xsd/representation.xsd" xmlns:xrd="http://x-road.eu/xsd/xroad.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <SOAP-ENV:Header>
+        <xrd:client id:objectType="SUBSYSTEM">
+            <id:xRoadInstance>ee-test</id:xRoadInstance>
+            <id:memberClass>GOV</id:memberClass>
+            <id:memberCode>70009999</id:memberCode>
+            <id:subsystemCode>mocksystem</id:subsystemCode>
+        </xrd:client>
+        <xrd:service id:objectType="SERVICE">
+            <id:xRoadInstance>ee-test</id:xRoadInstance>
+            <id:memberClass>GOV</id:memberClass>
+            <id:memberCode>70008899</id:memberCode>
+            <id:subsystemCode>rr</id:subsystemCode>
+            <id:serviceCode>RR456</id:serviceCode>
+            <id:serviceVersion>v1</id:serviceVersion>
+        </xrd:service>
+        <xrd:userId>EE11110011100</xrd:userId>
+        <xrd:id>natufiw1DBkTPsrV5GgNCQ</xrd:id>
+        <xrd:requestHash algorithmId="http://www.w3.org/2001/04/xmlenc#sha512">v1jWeY1FtuaSUz6zhk1DkUXZ6mfcg06Xz48EJWzmueu+kdUvoON6CRajoLwAm5kQLAA9ZzNIxjBiSFR2afLx+g==</xrd:requestHash>
+        <xrd:protocolVersion>4.0</xrd:protocolVersion>
+    </SOAP-ENV:Header>
+    <SOAP-ENV:Body>
+        <prod:RR456Response>
+            <request>
+                <Isikukood>{{.Identity}}</Isikukood></request>
+            <response>
+                <Veakood>0</Veakood>
+                <Isikud>
+                    <Isik>
+                        <Isik.Isikukood>{{.Identity}}</Isik.Isikukood>
+                        <Isik.Eesnimi>{{.IDName1}}</Isik.Eesnimi>
+                        <Isik.Perenimi>{{.IDName2}}</Isik.Perenimi>
+                        <Isik.MuudEesnimed>
+                        </Isik.MuudEesnimed>
+                        <Isik.MuudPerenimed>
+                        </Isik.MuudPerenimed>
+                        <Isik.Sugu>{{.IDNvl2 0 "M" "N"}}</Isik.Sugu>
+                        <Isik.IsikuStaatus>E</Isik.IsikuStaatus>
+                        <Isik.IsikuStaatuseMuutumine>08.05.2017 11:43:40</Isik.IsikuStaatuseMuutumine>
+                        <Isik.KirjeStaatus>K</Isik.KirjeStaatus>
+                        <Isik.Synniaeg>09.01.2010</Isik.Synniaeg>
+                        <Isik.Surmaaeg/>
+                        <Isik.SynniRiigiKd>233</Isik.SynniRiigiKd>
+                        <Isik.SynniRiigiNm>Eesti</Isik.SynniRiigiNm>
+                        <Isik.IsikKoda>233</Isik.IsikKoda>
+                        <Isik.ValisriigiIsikukoodid>
+                        </Isik.ValisriigiIsikukoodid>
+                        <Isik.SaabEestisse>09.01.2010</Isik.SaabEestisse>
+                        <Isik.LahkusEestist/>
+                        <Isik.SaabKOVi>09.01.2010</Isik.SaabKOVi>
+                        <Isik.Elamisluba/>
+                        <Isik.ElamisloaTahtaeg/>
+                        <Isik.ViimatiPar>08.05.2017 11:46:24</Isik.ViimatiPar>
+                        <Isik.RiigiKd>233</Isik.RiigiKd>
+                        <Isik.RiigiNm>Eesti</Isik.RiigiNm>
+                        <Isik.MaakonnaKd>57</Isik.MaakonnaKd>
+                        <Isik.MaakonnaNm>Lääne maakond</Isik.MaakonnaNm>
+                        <Isik.VallaKd>436</Isik.VallaKd>
+                        <Isik.VallaNm>Lääne-Nigula vald</Isik.VallaNm>
+                        <Isik.KylaKd/>
+                        <Isik.KylaNm/>
+                        <Isik.VaikekohaKd/>
+                        <Isik.VaikekohaNm/>
+                        <Isik.TanavaKd/>
+                        <Isik.TanavaNm/>
+                        <Isik.NimiKd/>
+                        <Isik.NimiNm/>
+                        <Isik.Majanr/>
+                        <Isik.Korternr/>
+                        <Isik.Aadress>Lääne maakond, Lääne-Nigula vald</Isik.Aadress>
+                        <Isik.Postiindeks/>
+                        <Isik.ADS_ADR_ID>2908725</Isik.ADS_ADR_ID>
+                        <Isik.ADS_OID/>
+                        <Isik.ADS_KOODAADRESS>564410000000000000000000000000000</Isik.ADS_KOODAADRESS>
+                        <Isik.ADS_ADOB_ID>0</Isik.ADS_ADOB_ID>
+                        <Isik.ElukohtLoodi>08.05.2017 11:46:24</Isik.ElukohtLoodi>
+                        <Isik.ElukohtMuudeti>24.07.2018 15:33:20</Isik.ElukohtMuudeti>
+                        <Isik.SideRiigiKd/>
+                        <Isik.SideRiigiNm/>
+                        <Isik.SideMaakonnaKd/>
+                        <Isik.SideMaakonnaNm/>
+                        <Isik.SideVallaKd/>
+                        <Isik.SideVallaNm/>
+                        <Isik.SideKylaKd/>
+                        <Isik.SideKylaNm/>
+                        <Isik.SideVaikekohaKd/>
+                        <Isik.SideVaikekohaNm/>
+                        <Isik.SideTanavaKd/>
+                        <Isik.SideTanavaNm/>
+                        <Isik.SideNimiKd/>
+                        <Isik.SideNimiNm/>
+                        <Isik.SideMajanr/>
+                        <Isik.SideKorternr/>
+                        <Isik.SideAadress/>
+                        <Isik.SidePostiindeks/>
+                        <Isik.SideADS_ADR_ID>0</Isik.SideADS_ADR_ID>
+                        <Isik.SideADS_OID/>
+                        <Isik.SideADS_KOODAADRESS/>
+                        <Isik.SideADS_ADOB_ID>0</Isik.SideADS_ADOB_ID>
+                        <Isik.Kontaktid>
+                        </Isik.Kontaktid>
+                    </Isik>
+                </Isikud>
+                <Dokumendid></Dokumendid>
+                <Suhted></Suhted>
+                <Hooldusoigused></Hooldusoigused>
+            </response>
+        </prod:RR456Response>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

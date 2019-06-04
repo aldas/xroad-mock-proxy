@@ -1,0 +1,33 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:iden="http://x-road.eu/xsd/identifiers"
+                   xmlns:prod="http://rr.x-road.eu/producer/rr" xmlns:xro="http://x-road.eu/xsd/xroad.xsd">
+    <SOAP-ENV:Header>
+        <xro:client iden:objectType="SUBSYSTEM">
+            <iden:xRoadInstance>ee-test</iden:xRoadInstance>
+            <iden:memberClass>GOV</iden:memberClass>
+            <iden:memberCode>70009999</iden:memberCode>
+            <iden:subsystemCode>mocksystem</iden:subsystemCode>
+        </xro:client>
+        <xro:service iden:objectType="SERVICE">
+            <iden:xRoadInstance>ee-test</iden:xRoadInstance>
+            <iden:memberClass>GOV</iden:memberClass>
+            <iden:memberCode>70008899</iden:memberCode>
+            <iden:subsystemCode>rr</iden:subsystemCode>
+            <iden:serviceCode>RR67_muutus</iden:serviceCode>
+            <iden:serviceVersion>v1</iden:serviceVersion>
+        </xro:service>
+        <xro:userId>EE11111111111</xro:userId>
+        <xro:id>HaNq1ke0X2QQmAkPk3eEoA</xro:id>
+        <xro:protocolVersion>4.0</xro:protocolVersion>
+    </SOAP-ENV:Header>
+    <SOAP-ENV:Body>
+        <prod:RR67_muutus xmlns:prod="http://rr.x-road.eu/producer/rr">
+            <request>
+                <cAlgKpv>16.01.2018</cAlgKpv>
+                <cAlgKell>14:55:09</cAlgKell>
+                <cLoppKpv>17.01.2018</cLoppKpv>
+                <cLoppKell>00:20:08</cLoppKell>
+                <cMuutused>1,2,3,4,7,9,10,12,22,23,24,25,26</cMuutused>
+            </request>
+        </prod:RR67_muutus>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

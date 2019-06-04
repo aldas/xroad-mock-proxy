@@ -3,6 +3,7 @@ package mock
 import (
 	"bytes"
 	"github.com/aldas/xroad-mock-proxy/pkg/common/soap"
+	"github.com/aldas/xroad-mock-proxy/pkg/mock/domain"
 	"github.com/aldas/xroad-mock-proxy/pkg/mock/rule"
 	"github.com/rs/zerolog"
 	"net/http"
@@ -51,10 +52,14 @@ func (s service) mock(requestBody []byte) ([]byte, int) {
 		return []byte("Unable to find identity in request\n"), http.StatusNotFound
 	}
 
+	return s.processRule(matchedRule, identity)
+}
+
+func (s service) processRule(matchedRule domain.Rule, identity string) ([]byte, int) {
 	vars := fromIdentity(identity)
 
 	var tpl bytes.Buffer
-	err = matchedRule.Template.Execute(&tpl, vars)
+	err := matchedRule.Template.Execute(&tpl, vars)
 	if err != nil {
 		s.logger.Error().Err(err).Interface("vars", vars).Msg("failed to execute template")
 		return []byte("Internal server error\n"), http.StatusInternalServerError

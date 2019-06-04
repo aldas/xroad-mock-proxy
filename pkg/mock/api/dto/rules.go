@@ -5,13 +5,10 @@ import (
 	"github.com/aldas/xroad-mock-proxy/pkg/common/dto"
 	"github.com/aldas/xroad-mock-proxy/pkg/mock/domain"
 	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 	"regexp"
 	"text/template"
 	"time"
 )
-
-var appFs = afero.NewOsFs()
 
 // RuleDTO is DTO for rule
 type RuleDTO struct {

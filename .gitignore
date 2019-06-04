@@ -1,7 +1,9 @@
 .idea/
 
-.xroad-mock-proxy.yaml
 coverage/
+coverage.html
+
+.xroad-mock-proxy.yaml
 xroad-mock-proxy
 
 # Test binary, build with `go test -c`

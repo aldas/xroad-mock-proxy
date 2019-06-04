@@ -7,6 +7,7 @@ import (
 	"github.com/aldas/xroad-mock-proxy/pkg/mock"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/api"
+	configProxy "github.com/aldas/xroad-mock-proxy/pkg/proxy/config"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/domain"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/request"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/rule"
@@ -72,7 +73,7 @@ func NewRootCmd(logger *zerolog.Logger, version string, build string) *RootCmd {
 
 				var wg sync.WaitGroup
 				proxyLogger := logger.With().Str("app", "proxy").Logger()
-				startProxy(&proxyLogger, appConfig, &wg)
+				startProxy(&proxyLogger, appConfig.ProxyConf, &wg)
 
 				if appConfig.MockConf.Enabled {
 					mockLogger := logger.With().Str("app", "mock").Logger()
@@ -95,9 +96,16 @@ func NewRootCmd(logger *zerolog.Logger, version string, build string) *RootCmd {
 	return cmd
 }
 
-func startProxy(logger *zerolog.Logger, appConfig config.Config, wg *sync.WaitGroup) {
-	proxyConf := appConfig.ProxyConf
+func startProxy(logger *zerolog.Logger, proxyConf configProxy.ProxyConf, wg *sync.WaitGroup) {
 	routesConf := proxyConf.RoutesConf
+
+	if !proxyConf.ServerConf.Enabled {
+		if proxyConf.APIConf.Enabled {
+			logger.Warn().Msg("proxy server is disabled but proxy API is enabled. This does not make sense!")
+		}
+
+		return
+	}
 
 	rules, err := domain.ConvertRules(routesConf.Rules)
 	if err != nil {

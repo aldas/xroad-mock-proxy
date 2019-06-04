@@ -2,6 +2,7 @@
 
 proxy:
   server:
+    enabled: true
     address: 'localhost:18080'
     context_path: '/cgi-bin/consumer_proxy'
     # (optional) tls - https/tls configuration for proxy. If omitted proxy will be served on plain HTTP

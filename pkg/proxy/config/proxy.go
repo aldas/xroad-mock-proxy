@@ -15,6 +15,7 @@ type ProxyConf struct {
 
 // ServerConf describes server configuration that application starts
 type ServerConf struct {
+	Enabled             bool                 `mapstructure:"enabled"`
 	Address             string               `mapstructure:"address"`
 	ContextPath         string               `mapstructure:"context_path"`
 	TLS                 common.ServerTLSConf `mapstructure:"tls"`

@@ -31,10 +31,31 @@ This repo compiles into single application that has 2 different parts.
 add/modify/remove proxying rules.
 * **mock** - responds configured SOAP messages to requests. Contains REST API to dynamically add/modify/remove rules/tempalates for responses.
 
-## Features
+## Features (goals)
 
-* support X-road security server with ClientCert authentication
-* support serving proxy on HTTP or HTTPS
+The application should support/have:
+* X-road security server with ClientCert authentication as a proxy target
+* for serving proxy on HTTP or HTTPS or ClientCert authentication (as recommended for X-road)
+* deciding server where to route request base on:
+    * requester IP
+    * request content (regex match)
+    * request X-road service name
+* modifying proxied request body based on rules
+* modifying proxied request response body based on rules
+* REST API to add/modify/remove proxy rules
+* REST API to add/modify/remove mock rules
+* basic frontend for proxy:
+    * list of last N proxied requests/responses
+    * list of proxy rules
+    * add/modify/remove proxy rules
+* basic frontend for mock:
+    * list of mock rules
+    * add/modify/remove mock rules
+
+### Non-goals
+
+* nice fancy frontend
+
 
 ## Configuration
 

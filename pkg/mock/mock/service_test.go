@@ -11,6 +11,14 @@ import (
 	"testing"
 )
 
+func TestNewService(t *testing.T) {
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
+	service := NewService(&logger, testStorage{})
+
+	assert.Implements(t, (*Service)(nil), service)
+}
+
 func TestMockNoMatchingRules(t *testing.T) {
 	service := createTestService(config.RuleConfigs{})
 
@@ -74,12 +82,4 @@ func (s testStorage) GetAll() domain.Rules {
 
 func (s testStorage) GetRule(ID int64) (domain.Rule, bool) {
 	return domain.Rule{}, false
-}
-
-func (s testStorage) Save(domain.Rule) (domain.Rule, error) {
-	return domain.Rule{}, nil
-}
-
-func (s testStorage) Remove(ID int64) bool {
-	return false
 }

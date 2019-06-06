@@ -17,11 +17,11 @@ type Service interface {
 
 type service struct {
 	logger  *zerolog.Logger
-	storage rule.Storage
+	storage rule.StorageGetter
 }
 
 // NewService creates instance of mock service
-func NewService(logger *zerolog.Logger, storage rule.Storage) Service {
+func NewService(logger *zerolog.Logger, storage rule.StorageGetter) Service {
 	return &service{
 		logger:  logger,
 		storage: storage,

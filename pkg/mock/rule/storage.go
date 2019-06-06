@@ -18,10 +18,15 @@ const (
 
 // Storage provides storage for rules
 type Storage interface {
-	GetAll() domain.Rules
-	GetRule(ID int64) (domain.Rule, bool)
+	StorageGetter
 	Save(domain.Rule) (domain.Rule, error)
 	Remove(ID int64) bool
+}
+
+// StorageGetter provides interface to get rules from storage
+type StorageGetter interface {
+	GetAll() domain.Rules
+	GetRule(ID int64) (domain.Rule, bool)
 }
 
 type cacheStorage struct {

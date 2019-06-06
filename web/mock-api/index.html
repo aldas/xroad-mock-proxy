@@ -50,7 +50,11 @@
 </head>
 <body>
 
-<h1>Rules for mock responses</h1>
+<p>
+    <a href="http://localhost:8082/index.html">Mock rules</a> | <a href="http://localhost:8081/rules.html">Proxy rules</a> | <a href="http://localhost:8081/requests.html">Proxied requests</a>
+</p>
+
+<h1>Mock rules</h1>
 <div>
     <button type="button" id="add-rule-btn">Add new rule</button>
 </div>
@@ -104,6 +108,7 @@
             <button name="submit" type="submit">Submit</button>
             <button name="reset" type="reset">Reset</button>
             <button name="remove" type="button">Remove</button>
+            <button name="use_for_add" type="button">Use for Add rule</button>
         </div>
     </form>
 </div>
@@ -189,7 +194,7 @@
                 url: 'api/rules/' + rowData.id,
                 dataType: 'json',
                 success: function (json) {
-                    var form = $("#form-template").clone().attr("id", "rule_" + json.data.id);
+                    var form = $("#form-template").clone().attr("id", "rule_" + json.data.id).addClass("edit-rule");
                     dataToForm(json.data, form);
                     div.empty().append(form);
                 },
@@ -203,8 +208,6 @@
         }
 
         function dataToForm(data, form) {
-            var isAdd = !data.id;
-
             form.find("input[name='id']").val(data.id);
             form.find("input[name='service']").val(data.service);
             form.find("input[name='priority']").val(data.priority);
@@ -220,14 +223,23 @@
             form.find("input[name='response_status']").val(data.response_status);
             form.find("input[name='timeout_duration']").val(data.timeout_duration);
 
-            if (isAdd) {
+            buttonsToForm(data, form);
+        }
+
+        function buttonsToForm(data, form) {
+            form.find("button").show();
+
+            if (!data.id) {
                 form.find("button[name='remove']").hide();
+                form.find("button[name='use_for_add']").hide();
             } else {
                 form.find("button[name='reset']").hide();
 
                 var removeBtn = form.find("button[name='remove']");
                 removeBtn.data('rule_id', data.id);
                 removeBtn.on('click', removeRule);
+
+                form.find("button[name='use_for_add']").on('click', useForAdd);
             }
 
             if (!!data.read_only) {
@@ -281,10 +293,23 @@
                 return;
             }
 
-            var container = $("#add-rule").empty();
             var form = $("#form-template").clone().attr("id", "rule_add").addClass("add-rule");
             dataToForm({}, form);
-            container.append(form);
+            $("#add-rule").empty().append(form);
+        }
+
+        function useForAdd() {
+            if ($("#rule_add").length) {
+                $("#add-rule").empty();
+                return;
+            }
+
+            var form = $(this).closest('.edit-rule').clone().attr("id", "rule_add").attr("class", "add-rule");
+            form.find("input[name='id']").val(undefined);
+            buttonsToForm({read_only: false}, form);
+
+            $("#add-rule").empty().append(form);
+            window.scrollTo(0,0);
         }
 
         function removeRule() {

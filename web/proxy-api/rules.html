@@ -55,8 +55,11 @@
 </head>
 <body>
 
-<h1><a href="index.html">Rules for proxy</a></h1>
+<p>
+    <a href="http://localhost:8082/index.html">Mock rules</a> | <a href="http://localhost:8081/rules.html">Proxy rules</a> | <a href="http://localhost:8081/requests.html">Proxied requests</a>
+</p>
 
+<h1>Proxy rules</h1>
 <div>
     <button type="button" id="add-rule-btn">Add new rule</button>
 </div>
@@ -273,7 +276,7 @@
             buttonsToForm({read_only: false}, form);
 
             $("#add-rule").empty().append(form);
-            $(body).scrollTop(0);
+            window.scrollTo(0,0);
         }
 
         function removeRule() {

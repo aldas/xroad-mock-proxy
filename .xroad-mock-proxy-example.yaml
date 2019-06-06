@@ -79,9 +79,9 @@ mock:
       matcher_regexes:
         - '(?mi)<isikukood>\d{3}1102\d{4}<\/isikukood>'
       identity_regex: '(?mi)<isikukood>(\d{11})<\/isikukood>'
-      template_file: './mock/rr.rr456.v1/response.xml'
+      template_file: './test/testdata/rr.rr456.v1/response.xml'
       timeout_duration: '1s'
     - service: 'rr.rr456.v1'
       priority: 900
-      template_file: './mock/rr.rr456.v1/not_found.xml'
+      template_file: './test/testdata/rr.rr456.v1/not_found.xml'
       response_status: 404

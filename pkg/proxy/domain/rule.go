@@ -151,6 +151,10 @@ func (r Rules) FindByID(ID int64) (Rule, bool) {
 }
 
 func (r Rule) match(requestBody []byte) bool {
+	if len(r.MatcherRegex) == 0 {
+		return true
+	}
+
 	for _, regex := range r.MatcherRegex {
 		if regex.Match(requestBody) {
 			return true

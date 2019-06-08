@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# usage: ./post2mock.sh testdata/rr.rr456.v1/rr456.paring.xml
+# usage: ./post2mock.sh test/testdata/rr.rr456.v1/rr456.paring.xml
 
-PAYLOAD=${1:-testdata/rr.rr456.v1/rr456.paring.xml}
+PAYLOAD=${1:-test/testdata/rr.rr456.v1/rr456.paring.xml}
 SERVER=${2:-http://localhost:8080}
 
 if [[ ! -f ${PAYLOAD} ]]; then

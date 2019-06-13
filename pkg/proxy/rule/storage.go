@@ -109,7 +109,7 @@ func (s cacheStorage) Save(r domain.Rule) (domain.Rule, error) {
 			return domain.Rule{}, errors.New("can not change system rule")
 		}
 
-		rule, ok = s.getRule(r.ID)
+		rule, ok = s.cacheGet(r.ID)
 		if !ok {
 			return domain.Rule{}, apperror.ErrorNotFound
 		}

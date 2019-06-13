@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Replacer</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" charset="utf8"
+            src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+
+    <style>
+        .form-details div {
+            margin-bottom: 0.5em;
+        }
+
+        .form-details input {
+            width: 100%;
+        }
+
+        textarea {
+            background: aliceblue;
+            max-width: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<p>
+    <a href="http://localhost:8082/index.html">Mock rules</a> | <a href="http://localhost:8081/rules.html">Proxy
+        rules</a> | <a href="http://localhost:8081/requests.html">Proxied requests</a>
+</p>
+
+<h1>Content replacer</h1>
+
+<div id="form-template">
+    <form class="form-details">
+
+        <div>
+            <button id="add_row" name="add_row" type="button">Add row</button>
+            <button name="reset" type="reset">Reset</button>
+        </div>
+        <table id="replacements">
+            <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>&nbsp;</th>
+            </tr>
+            <tr>
+                <td><input name="r_from" type="text" maxlength="100" value="{{.Identity}}"></td>
+                <td><input name="r_to" type="text" maxlength="100" value="38206120000"></td>
+                <td>
+                    <button name="replace" type="button">Replace</button>
+                </td>
+            </tr>
+            <tr>
+                <td><input name="r_from" type="text" maxlength="100" value=""></td>
+                <td><input name="r_to" type="text" maxlength="100" value=""></td>
+                <td>
+                    <button name="replace" type="button">Replace</button>
+                </td>
+            </tr>
+            <tr>
+                <td><input name="r_from" type="text" maxlength="100" value=""></td>
+                <td><input name="r_to" type="text" maxlength="100" value=""></td>
+                <td>
+                    <button name="replace" type="button">Replace</button>
+                </td>
+            </tr>
+        </table>
+
+        <div>
+            <span>Original:</span>
+            <textarea id="original" name="original" cols="180" rows="5"></textarea>
+        </div>
+        <div>
+            <span>Replaced:</span>
+            <textarea id="replaced" name="replaced" cols="180" rows="20"></textarea>
+        </div>
+        <div>
+            <button id="copy" name="copy" type="button">Copy to clipboard</button>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    function escapeRegExp(str) {
+        return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    }
+
+    function replaceAll(str, find, replace) {
+        return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    }
+
+    $(document).ready(function () {
+        $('button[name=\'replace\']').on('click', function () {
+            var tr = $(this).closest('tr');
+
+            var from = tr.find("input[name='r_from']").val();
+            var to = tr.find("input[name='r_to']").val();
+
+            if (!from || from.length === 0) {
+                return;
+            }
+
+            var replaced = $("#replaced").val();
+            if (!replaced || replaced.length === 0) {
+                replaced = $("#original").val();
+            }
+            $('#replaced').val(replaceAll(replaced, from, to));
+            console.log("replaced: '" + from + "' -> '" + to + "'");
+        });
+
+        $('#add_row').on('click', function () {
+            var tr = $('#replacements tr').last();
+
+            $('#replacements').append(tr.clone(true));
+
+        });
+
+        $('#copy').on('click', function () {
+            $("#replaced").select();
+            document.execCommand("copy");
+        });
+
+    });
+</script>
+</body>
+</html>

@@ -40,7 +40,7 @@ func NewStorage(logger *zerolog.Logger, rules domain.Rules, storageSize int, sto
 
 	gcBuilder := gcache.New(size).LRU()
 
-	if storageDuration <= 0 {
+	if storageDuration > 0 {
 		gcBuilder = gcBuilder.Expiration(storageDuration)
 	}
 

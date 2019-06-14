@@ -33,13 +33,13 @@ Hypothetical use case for proxy/mock:
     ```
     
 2. Create client certificates for you application. 
-    This needed as we server proxy over client certificate auth TLS  (as our X-road security server does)
+    This is needed as we server proxy over client certificate auth TLS (as our X-road security server does)
 
     Create key and certificate signing request (CSR) for `client app1` with `clientAuth` extension
     NB: drop `-nodes` from args if you want private key to have password
     
     ```bash
-    # Ubuntu: /etc/pki/tls/openssl.cnf
+    # Ubuntu: /etc/ssl/openssl.cnf 
     # Centos: /etc/pki/tls/openssl.cnf
     openssl req -newkey rsa:4096 -keyout client_app1_key.pem -out client_app1_csr.pem -nodes -subj "/CN=client-app1" \
         -reqexts cert_ext -config <(cat /etc/pki/tls/openssl.cnf <(printf "\n[cert_ext]\nextendedKeyUsage=serverAuth,clientAuth"))
@@ -74,24 +74,31 @@ Hypothetical use case for proxy/mock:
         -destkeypass privatekey-password
     
     # Export certificate using openssl:
-    openssl pkcs12 -in keystore.p12 -nokeys -out xroad-cert.pem
+    openssl pkcs12 -in keystore.p12 -nokeys -out xroad-client-cert.pem
     # Export unencrypted private key:
-    openssl pkcs12 -in keystore.p12 -nodes -nocerts -out xroad-key.pem
+    openssl pkcs12 -in keystore.p12 -nodes -nocerts -out xroad-client-key.pem
     ```
 
-4. Create system user for application. For security reasons no shell, no home, no nothing
+4. Extract X-road security server certificate to be used as `ca_file`
+
+    ```bash
+    openssl s_client -showcerts -servername xroad.security.ee -connect xroad.security.ee:443 \
+        </dev/null 2>/dev/null | openssl x509 -outform PEM > xroad-server-cert.pem
+    ```
+
+5. Create system user for application. For security reasons no shell, no home, no nothing
     ```bash
     sudo adduser -r -s /usr/sbin/nologin xroad
     ```
 
-5. Create folder for application and its configuration
+6. Create folder for application and its configuration
     ```bash
     sudo mkdir -p /opt/app/xroad-mock-proxy
     sudo chown xroad:xroad /opt/app/xroad-mock-proxy
     sudo chmod 750 /opt/app/xroad-mock-proxy
     ```
 
-6. Copy certificates to conf folder
+7. Copy certificates to conf folder
     ```bash
     sudo mkdir -p /opt/app/xroad-mock-proxy/certificates/
  
@@ -99,17 +106,17 @@ Hypothetical use case for proxy/mock:
     sudo cp xroad-*.pem /opt/app/xroad-mock-proxy/certificates/
     ```
 
-7. Copy mock response files for predefined mock responses
+8. Copy mock response files for predefined mock responses
     ```bash
     sudo cp -r mock /opt/app/xroad-mock-proxy/
     ```
 
-8. Copy `web` assets for proxy and mock frontend
+9. Copy `web` assets for proxy and mock frontend
     ```bash
     sudo cp -r web /opt/app/xroad-mock-proxy/
     ```
 
-9. Copy application and it's configuration files to `/opt/app/xroad-mock-proxy`
+8. Copy application and it's configuration files to `/opt/app/xroad-mock-proxy`
     ```bash
     sudo cp xroad-mock-proxy /opt/app/xroad-mock-proxy/
     sudo cp .xroad-mock-proxy-example.yaml /opt/app/xroad-mock-proxy/.xroad-mock-proxy.yaml
@@ -119,7 +126,7 @@ Hypothetical use case for proxy/mock:
     sudo chmod 750 -R /opt/app/xroad-mock-proxy
     ```
 
-10. Edit configuration file `/opt/app/xroad-mock-proxy/.xroad-mock-proxy.yaml`
+11. Edit configuration file `/opt/app/xroad-mock-proxy/.xroad-mock-proxy.yaml`
     
     Configure network interface, port and certificates for proxy server
     ```yaml
@@ -143,13 +150,13 @@ Hypothetical use case for proxy/mock:
              is_default: true
              address: 'https://xroad.lan.ee:443'
              tls:
-               ca_file: '/opt/app/xroad-mock-proxy/certificates/xroad-cert.pem'
-               cert_file: '/opt/app/xroad-mock-proxy/certificates/xroad-cert.pem'
-               key_file: '/opt/app/xroad-mock-proxy/certificates/xroad-key.pem'
+               ca_file: '/opt/app/xroad-mock-proxy/certificates/xroad-server-cert.pem'
+               cert_file: '/opt/app/xroad-mock-proxy/certificates/xroad-client-cert.pem'
+               key_file: '/opt/app/xroad-mock-proxy/certificates/xroad-client-key.pem'
                key_password: '' # (optional) fill if you created private key with password
     ```
 
-11. Copy systemd service file, enable service to start after reboot and start it right now
+12. Copy systemd service file, enable service to start after reboot and start it right now
     ```bash
     sudo cp xroad-mock-proxy.service /lib/systemd/system/.
     sudo chmod 755 /lib/systemd/system/xroad-mock-proxy.service
@@ -169,7 +176,7 @@ Hypothetical use case for proxy/mock:
     sudo journalctl -u xroad-mock-proxy -f
     ```
 
-12. Test proxy with CURL
+13. Test proxy with CURL
     ```bash
     curl -v \
         --cacert ./proxy_server_cert.pem \

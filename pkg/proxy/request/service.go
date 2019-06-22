@@ -8,6 +8,7 @@ import (
 
 // Service is service for requests domain
 type Service interface {
+	DeleteRequests()
 	GetRequests() []domain.Request
 	GetRequest(ID string) (domain.Request, error)
 }
@@ -23,6 +24,10 @@ func NewService(logger *zerolog.Logger, cache Storage) Service {
 		logger: logger,
 		cache:  cache,
 	}
+}
+
+func (s service) DeleteRequests() {
+	s.cache.DeleteAll()
 }
 
 func (s service) GetRequests() []domain.Request {

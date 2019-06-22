@@ -24,7 +24,19 @@ func RegisterRoutes(srv request.Service, eg *echo.Group) {
 	ur := eg.Group(RequestPath)
 
 	ur.GET("", h.getRequests)
+	ur.DELETE("", h.deleteRequests)
+
 	ur.GET("/:id", h.getRequest)
+}
+
+// deleteRequests deletes all cached proxy requests
+func (h *controller) deleteRequests(c echo.Context) error {
+	h.service.DeleteRequests()
+
+	return c.JSON(http.StatusOK, dto2.APIResponse{
+		Data:    "OK",
+		Success: true,
+	})
 }
 
 // getRequests returns list of all cached proxy requests

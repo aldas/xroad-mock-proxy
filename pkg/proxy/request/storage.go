@@ -17,6 +17,7 @@ type Storage interface {
 	Get(ID string) (domain.Request, bool)
 	GetAllIDs() []string
 	GetAll() []domain.Request
+	DeleteAll()
 }
 
 type requestCache struct {
@@ -87,4 +88,8 @@ func (c *requestCache) GetAll() []domain.Request {
 	}
 
 	return result
+}
+
+func (c *requestCache) DeleteAll() {
+	c.cache.Purge()
 }

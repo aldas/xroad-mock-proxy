@@ -37,10 +37,7 @@ func ConvertProxyServers(conf config.ProxyServerConfigs) (ProxyServers, error) {
 }
 
 func createProxyServer(conf config.ProxyServerConf) (ProxyServer, error) {
-	var transport http.RoundTripper
-	if conf.TLS.UseSystemTransport {
-		transport = http.DefaultTransport
-	}
+	var transport = http.DefaultTransport
 
 	if !conf.TLS.UseSystemTransport && conf.TLS.CertFile != "" {
 		tlsClientConf, err := tlsConfig(conf.TLS)

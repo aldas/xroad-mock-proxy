@@ -81,9 +81,12 @@ func serveWithProxy(
 		t.Fatal(err)
 	}
 
-	service := NewService(&logger, servers, ruleMockService{Rules: rules})
-
-	proxy, err := NewProxyHandler(&logger, service, ruleMockCache{})
+	proxy, err := NewProxyHandler(
+		&logger,
+		serverMockService{servers: servers},
+		ruleMockService{Rules: rules},
+		ruleMockCache{},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,11 +97,27 @@ func serveWithProxy(
 	return recorder
 }
 
+type serverMockService struct {
+	servers domain.ProxyServers
+}
+
+func (s serverMockService) HostToProxyServer(host string) (domain.ProxyServer, bool) {
+	return s.servers.FindByHost(host)
+}
+
+func (s serverMockService) DefaultServer() (domain.ProxyServer, bool) {
+	return s.servers.Default()
+}
+
+func (s serverMockService) Servers() domain.ProxyServers {
+	return s.servers
+}
+
 type ruleMockService struct {
 	Rules []domain.Rule
 }
 
-func (s ruleMockService) GetAll() []domain.Rule {
+func (s ruleMockService) GetAll() domain.Rules {
 	return s.Rules
 }
 
@@ -126,4 +145,7 @@ func (c ruleMockCache) GetAllIDs() []string {
 }
 func (c ruleMockCache) GetAll() []domain.Request {
 	return nil
+}
+func (c ruleMockCache) DeleteAll() {
+	return
 }

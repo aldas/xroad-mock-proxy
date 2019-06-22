@@ -6,6 +6,7 @@ import (
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/domain"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/request"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/rule"
+	proxyserver "github.com/aldas/xroad-mock-proxy/pkg/proxy/server"
 	"github.com/labstack/echo"
 	"github.com/rs/zerolog"
 	"net/http"
@@ -82,9 +83,9 @@ func createProxyHandler(
 	if err != nil {
 		return nil, err
 	}
-	proxyService := NewService(logger, servers, ruleService)
+	serverService := proxyserver.NewService(logger, servers)
 
-	return NewProxyHandler(logger, proxyService, requestCache)
+	return NewProxyHandler(logger, serverService, ruleService, requestCache)
 }
 
 type defaultHandler struct {

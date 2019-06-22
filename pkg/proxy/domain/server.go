@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -59,7 +60,7 @@ func createProxyServer(conf config.ProxyServerConf) (ProxyServer, error) {
 	}
 
 	return ProxyServer{
-		Name:      conf.Name,
+		Name:      strings.ToLower(conf.Name),
 		Address:   *address,
 		IsDefault: conf.IsDefault,
 		Transport: transport,
@@ -97,6 +98,8 @@ func (p ProxyServers) Default() (ProxyServer, bool) {
 
 // Find returns first proxy server matching given name
 func (p ProxyServers) Find(name string) (ProxyServer, bool) {
+	name = strings.ToLower(name)
+
 	for _, server := range p {
 		if server.Name == name {
 			return server, true

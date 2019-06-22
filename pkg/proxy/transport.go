@@ -1,14 +1,15 @@
 package proxy
 
 import (
+	"github.com/aldas/xroad-mock-proxy/pkg/proxy/server"
 	"github.com/rs/zerolog"
 	"net/http"
 )
 
 type transportSwitcher struct {
-	logger    *zerolog.Logger
-	Transport http.RoundTripper
-	service   Service
+	logger        *zerolog.Logger
+	Transport     http.RoundTripper
+	serverService server.Service
 }
 
 // RoundTrip is to use different Transports depending on request url. This is needed in when X-road server uses TLS and
@@ -20,9 +21,9 @@ func (s transportSwitcher) RoundTrip(req *http.Request) (*http.Response, error) 
 	ID := req.Header.Get(requestIDHeader)
 
 	host := req.URL.Host
-	server, ok := s.service.HostToProxyServer(host)
-	if ok && server.Transport != nil {
-		transport = server.Transport
+	hostServer, ok := s.serverService.HostToProxyServer(host)
+	if ok && hostServer.Transport != nil {
+		transport = hostServer.Transport
 
 		s.logger.Info().
 			Str("ID", ID).

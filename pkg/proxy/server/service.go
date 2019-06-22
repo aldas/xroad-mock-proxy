@@ -1,31 +1,27 @@
-package proxy
+package server
 
 import (
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/domain"
-	"github.com/aldas/xroad-mock-proxy/pkg/proxy/rule"
 	"github.com/rs/zerolog"
 )
 
-// Service provides functionality to proxy handler for matching rules and servers
+// Service provides methods to manager proxy servers
 type Service interface {
 	HostToProxyServer(host string) (domain.ProxyServer, bool)
 	DefaultServer() (domain.ProxyServer, bool)
-	Rules() domain.Rules
 	Servers() domain.ProxyServers
 }
 
 type service struct {
-	logger      *zerolog.Logger
-	servers     domain.ProxyServers
-	ruleService rule.Service
+	logger  *zerolog.Logger
+	servers domain.ProxyServers
 }
 
-// NewService created new proxy service instance
-func NewService(logger *zerolog.Logger, servers domain.ProxyServers, ruleService rule.Service) Service {
+// NewService created new server service instance
+func NewService(logger *zerolog.Logger, servers domain.ProxyServers) Service {
 	return &service{
-		logger:      logger,
-		servers:     servers,
-		ruleService: ruleService,
+		logger:  logger,
+		servers: servers,
 	}
 }
 
@@ -35,10 +31,6 @@ func (s service) HostToProxyServer(host string) (domain.ProxyServer, bool) {
 
 func (s service) DefaultServer() (domain.ProxyServer, bool) {
 	return s.servers.Default()
-}
-
-func (s service) Rules() domain.Rules {
-	return s.ruleService.GetAll()
 }
 
 func (s service) Servers() domain.ProxyServers {

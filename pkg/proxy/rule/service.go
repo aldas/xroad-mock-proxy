@@ -8,7 +8,7 @@ import (
 
 // Service provides mock API functionality
 type Service interface {
-	GetAll() []domain.Rule
+	GetAll() domain.Rules
 	GetRule(ID int64) (domain.Rule, bool)
 	Save(domain.Rule) (domain.Rule, error)
 	Remove(ID int64) bool
@@ -27,7 +27,7 @@ func NewService(logger *zerolog.Logger, storage Storage) Service {
 	}
 }
 
-func (s service) GetAll() []domain.Rule {
+func (s service) GetAll() domain.Rules {
 	return s.storage.GetAll()
 }
 

@@ -6,6 +6,8 @@ import (
 	"github.com/aldas/xroad-mock-proxy/pkg/common/soap"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/domain"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/request"
+	"github.com/aldas/xroad-mock-proxy/pkg/proxy/rule"
+	"github.com/aldas/xroad-mock-proxy/pkg/proxy/server"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"io/ioutil"
@@ -27,9 +29,11 @@ const (
 )
 
 type proxy struct {
-	logger  *zerolog.Logger
-	service Service
-	cache   request.Storage
+	logger *zerolog.Logger
+	cache  request.Storage
+
+	serverService server.Service
+	ruleService   rule.Service
 
 	defaultServer domain.ProxyServer
 	proxyHandler  http.Handler
@@ -40,16 +44,22 @@ func (p proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 // NewProxyHandler creates new http handler for proxy
-func NewProxyHandler(logger *zerolog.Logger, service Service, cache request.Storage) (http.Handler, error) {
-	defaultServer, ok := service.DefaultServer()
+func NewProxyHandler(
+	logger *zerolog.Logger,
+	serverService server.Service,
+	ruleService rule.Service,
+	cache request.Storage,
+) (http.Handler, error) {
+	defaultServer, ok := serverService.DefaultServer()
 	if !ok {
 		return nil, errors.New("failed to find default proxy server configuration")
 	}
 
 	proxy := proxy{
-		logger:  logger,
-		service: service,
-		cache:   cache,
+		logger:        logger,
+		serverService: serverService,
+		ruleService:   ruleService,
+		cache:         cache,
 
 		defaultServer: defaultServer,
 	}
@@ -84,8 +94,8 @@ func (p *proxy) createProxyHandler() http.Handler {
 	}
 
 	switcher := transportSwitcher{
-		logger:  p.logger,
-		service: p.service,
+		logger:        p.logger,
+		serverService: p.serverService,
 	}
 	if p.defaultServer.Transport != nil {
 		switcher.Transport = p.defaultServer.Transport
@@ -115,7 +125,7 @@ func (p *proxy) processBody(req *http.Request) *url.URL {
 	logRow := p.logger.Info().Str("serviceName", serviceName)
 
 	// TODO match Request.Header
-	rule, ok := p.service.Rules().MatchRemoteAddr(req.RemoteAddr).MatchService(serviceName).MatchRegex(requestBody)
+	matchedRule, ok := p.ruleService.GetAll().MatchRemoteAddr(req.RemoteAddr).MatchService(serviceName).MatchRegex(requestBody)
 	if !ok {
 		req.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
 		logRow.Msg("received SOAP message without matching rule")
@@ -125,7 +135,7 @@ func (p *proxy) processBody(req *http.Request) *url.URL {
 	requestID := fmt.Sprintf("%v", rand.Uint64())
 	p.cache.Set(domain.Request{
 		ID:          requestID,
-		RuleID:      rule.ID,
+		RuleID:      matchedRule.ID,
 		Service:     serviceName,
 		RequestTime: time.Now(),
 		Request:     requestBody,
@@ -134,11 +144,11 @@ func (p *proxy) processBody(req *http.Request) *url.URL {
 	req.Header.Add(requestIDHeader, requestID)
 	// ruleID is also in header because by the time response arrives our LRU cache can be already dropped request
 	// object but we need rule to response replacements to work
-	req.Header.Add(requestRuleIDHeader, strconv.Itoa(int(rule.ID)))
+	req.Header.Add(requestRuleIDHeader, strconv.Itoa(int(matchedRule.ID)))
 
-	logRow.Str("requestID", requestID).Int64("ruleID", rule.ID).Msg("Matched to rule")
+	logRow.Str("requestID", requestID).Int64("ruleID", matchedRule.ID).Msg("Matched to rule")
 
-	server, ok := p.service.Servers().Find(rule.Server)
+	matchedServer, ok := p.serverService.Servers().Find(matchedRule.Server)
 	if !ok {
 		p.logger.Error().Msg("failed to find server matching rule")
 
@@ -146,8 +156,8 @@ func (p *proxy) processBody(req *http.Request) *url.URL {
 		return nil
 	}
 
-	if len(rule.RequestReplacements) > 0 {
-		requestBody = rule.ApplyRequestReplacements(requestBody)
+	if len(matchedRule.RequestReplacements) > 0 {
+		requestBody = matchedRule.ApplyRequestReplacements(requestBody)
 		requestSize := int64(len(requestBody))
 
 		req.ContentLength = requestSize
@@ -155,7 +165,7 @@ func (p *proxy) processBody(req *http.Request) *url.URL {
 	}
 
 	req.Body = ioutil.NopCloser(bytes.NewBuffer(requestBody))
-	return &server.Address
+	return &matchedServer.Address
 }
 
 func (p *proxy) modifyResponse(r *http.Response) error {
@@ -181,9 +191,9 @@ func (p *proxy) modifyResponse(r *http.Response) error {
 	}
 
 	if ruleID != 0 {
-		rule, ok := p.service.Rules().FindByID(int64(ruleID))
-		if ok && len(rule.ResponseReplacements) > 0 {
-			responseBody = rule.ApplyResponseReplacements(responseBody)
+		r, ok := p.ruleService.GetAll().FindByID(int64(ruleID))
+		if ok && len(r.ResponseReplacements) > 0 {
+			responseBody = r.ApplyResponseReplacements(responseBody)
 		}
 	}
 

@@ -21,7 +21,17 @@ func configureTLSConfig(server *http.Server, config TLSConf) error {
 		return errors.Wrap(err, "failed to get CA certificates")
 	}
 
-	cert, err := loadX509KeyPair(config.CertFile, config.KeyFile, config.KeyPassword)
+	certBytes, err := ioutil.ReadFile(config.CertFile)
+	if err != nil {
+		return errors.Wrap(err, "failed to read cert file")
+	}
+
+	keyBytes, err := ioutil.ReadFile(config.KeyFile)
+	if err != nil {
+		return errors.Wrap(err, "failed to read private key file")
+	}
+
+	cert, err := loadX509KeyPair(certBytes, keyBytes, config.KeyPassword)
 	if err != nil {
 		return err
 	}
@@ -61,29 +71,21 @@ func certPool(caRootPath string) (certPool *x509.CertPool, err error) {
 	return certPool, nil
 }
 
-func loadX509KeyPair(certFile, keyFile, keyPassword string) (tls.Certificate, error) {
-	certPEMBlock, err := ioutil.ReadFile(certFile)
-	if err != nil {
-		return tls.Certificate{}, errors.Wrap(err, "failed to read cert file")
-	}
-	keyPEMBlock, err := loadPrivateKey(keyFile, keyPassword)
+// loadX509KeyPair load cert and key to keypair
+func loadX509KeyPair(certBytes, keyBytes []byte, keyPassword string) (tls.Certificate, error) {
+	keyPEMBlock, err := loadPrivateKey(keyBytes, keyPassword)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
-	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+	return tls.X509KeyPair(certBytes, keyPEMBlock)
 }
 
-func loadPrivateKey(file string, password string) ([]byte, error) {
-	b, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read private key file")
-	}
-
+func loadPrivateKey(keyBytes []byte, password string) ([]byte, error) {
 	var v *pem.Block
 	var pkey []byte
 
 	for {
-		v, b = pem.Decode(b)
+		v, keyBytes = pem.Decode(keyBytes)
 		if v == nil {
 			break
 		}
@@ -92,7 +94,7 @@ func loadPrivateKey(file string, password string) ([]byte, error) {
 		}
 
 		if x509.IsEncryptedPEMBlock(v) {
-			pkey, err = x509.DecryptPEMBlock(v, []byte(password))
+			pkey, err := x509.DecryptPEMBlock(v, []byte(password))
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to decrypt private key with password.")
 			}
@@ -108,4 +110,20 @@ func loadPrivateKey(file string, password string) ([]byte, error) {
 		return pkey, nil
 	}
 	return nil, errors.New("private key file did not contain private key")
+}
+
+// ToTLSConfig creates TLS config
+func ToTLSConfig(caCert []byte, certBytes []byte, keyBytes []byte, keyPassword string) (*tls.Config, error) {
+	cert, err := loadX509KeyPair(certBytes, keyBytes, keyPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	return &tls.Config{
+		RootCAs:      caCertPool,
+		Certificates: []tls.Certificate{cert},
+	}, nil
 }

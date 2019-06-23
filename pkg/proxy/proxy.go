@@ -32,7 +32,7 @@ type proxy struct {
 	logger *zerolog.Logger
 	cache  request.Storage
 
-	serverService server.Service
+	serverService server.AccessorService
 	ruleService   rule.Service
 
 	defaultServer domain.ProxyServer
@@ -46,7 +46,7 @@ func (p proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 // NewProxyHandler creates new http handler for proxy
 func NewProxyHandler(
 	logger *zerolog.Logger,
-	serverService server.Service,
+	serverService server.AccessorService,
 	ruleService rule.Service,
 	cache request.Storage,
 ) (http.Handler, error) {
@@ -148,7 +148,7 @@ func (p *proxy) processBody(req *http.Request) *url.URL {
 
 	logRow.Str("requestID", requestID).Int64("ruleID", matchedRule.ID).Msg("Matched to rule")
 
-	matchedServer, ok := p.serverService.Servers().Find(matchedRule.Server)
+	matchedServer, ok := p.serverService.Find(matchedRule.Server)
 	if !ok {
 		p.logger.Error().Msg("failed to find server matching rule")
 

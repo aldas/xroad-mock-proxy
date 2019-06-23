@@ -46,6 +46,7 @@ func (s service) Save(rule domain.Rule) (domain.Rule, error) {
 		}
 	}
 
+	// TODO: check if server actually exists
 	return s.storage.Save(rule)
 }
 

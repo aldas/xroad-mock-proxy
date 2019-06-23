@@ -50,8 +50,10 @@ type ProxyServerConfigs []ProxyServerConf
 type ProxyServerConf struct {
 	Address   string         `mapstructure:"address"`
 	TLS       common.TLSConf `mapstructure:"tls"`
-	IsDefault bool           `mapstructure:"is_default"`
 	Name      string         `mapstructure:"name"`
+	IsDefault bool           `mapstructure:"is_default"`
+	// should rule be changeable in API (defaults to true)
+	IsReadOnly *bool `mapstructure:"read_only"`
 }
 
 // ServerStorageConf describes serve different storage configurations

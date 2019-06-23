@@ -11,6 +11,7 @@ import (
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/domain"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/request"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/rule"
+	"github.com/aldas/xroad-mock-proxy/pkg/proxy/server"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -107,9 +108,15 @@ func startProxy(logger *zerolog.Logger, proxyConf configProxy.ProxyConf, wg *syn
 		return
 	}
 
+	servers, err := domain.ConvertProxyServers(routesConf.Servers)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to convert servers for proxy")
+	}
+	serverService := server.NewService(logger, servers)
+
 	rules, err := domain.ConvertRules(routesConf.Rules)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("failed to bind flags")
+		logger.Fatal().Err(err).Msg("failed to convert rules for proxy")
 	}
 
 	rulesStorageConf := proxyConf.StorageConf.Rules
@@ -117,9 +124,9 @@ func startProxy(logger *zerolog.Logger, proxyConf configProxy.ProxyConf, wg *syn
 
 	requestStorageConf := proxyConf.StorageConf.Requests
 	requestCache := request.NewStorage(requestStorageConf.Size, requestStorageConf.Expiration)
-	proxy.Start(logger, proxyConf.ServerConf, routesConf.Servers, requestCache, ruleService, wg)
+	proxy.Start(logger, proxyConf.ServerConf, requestCache, serverService, ruleService, wg)
 	if proxyConf.APIConf.Enabled {
-		api.Start(logger, proxyConf.APIConf, requestCache, ruleService, wg)
+		api.Start(logger, proxyConf.APIConf, requestCache, serverService, ruleService, wg)
 	}
 }
 

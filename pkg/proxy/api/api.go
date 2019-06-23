@@ -1,12 +1,14 @@
 package api
 
 import (
-	"github.com/aldas/xroad-mock-proxy/pkg/common/server"
+	commonServer "github.com/aldas/xroad-mock-proxy/pkg/common/server"
 	requestApi "github.com/aldas/xroad-mock-proxy/pkg/proxy/api/request"
 	ruleApi "github.com/aldas/xroad-mock-proxy/pkg/proxy/api/rule"
+	serverApi "github.com/aldas/xroad-mock-proxy/pkg/proxy/api/server"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/config"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/request"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/rule"
+	"github.com/aldas/xroad-mock-proxy/pkg/proxy/server"
 	"github.com/labstack/echo"
 	"github.com/rs/zerolog"
 	"sync"
@@ -17,6 +19,7 @@ func Start(
 	logger *zerolog.Logger,
 	conf config.APIConf,
 	requestCache request.Storage,
+	serverService server.Service,
 	ruleService rule.Service,
 	wg *sync.WaitGroup,
 ) {
@@ -24,7 +27,7 @@ func Start(
 
 	go func() {
 		defer wg.Done()
-		err := serve(logger, conf, requestCache, ruleService)
+		err := serve(logger, conf, requestCache, serverService, ruleService)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("failed to start API server")
 		}
@@ -32,21 +35,27 @@ func Start(
 }
 
 // Start starts the API service. Method will block until server is shutdown gracefully or until context timeouts
-func serve(logger *zerolog.Logger, conf config.APIConf, requestCache request.Storage, ruleService rule.Service) error {
-	e := server.New()
+func serve(
+	logger *zerolog.Logger,
+	conf config.APIConf,
+	requestCache request.Storage,
+	serverService server.Service,
+	ruleService rule.Service,
+) error {
+	e := commonServer.New()
 
 	rootGroup := e.Group(conf.ContextPath)
-	if err := addRoutes(logger, rootGroup, conf, requestCache, ruleService); err != nil {
+	if err := addRoutes(logger, rootGroup, conf, requestCache, serverService, ruleService); err != nil {
 		return err
 	}
 
-	err := server.Start(e, &server.Config{
+	err := commonServer.Start(e, &commonServer.Config{
 		Address:             conf.Address,
 		ReadTimeoutSeconds:  conf.ReadTimeoutSeconds,
 		WriteTimeoutSeconds: conf.WriteTimeoutSeconds,
 		Debug:               conf.Debug,
 		DebugPath:           conf.DebugPath,
-		TLS: server.TLSConf{
+		TLS: commonServer.TLSConf{
 			CAFile:              conf.TLS.CAFile,
 			CertFile:            conf.TLS.CertFile,
 			KeyFile:             conf.TLS.KeyFile,
@@ -58,7 +67,14 @@ func serve(logger *zerolog.Logger, conf config.APIConf, requestCache request.Sto
 	return err
 }
 
-func addRoutes(logger *zerolog.Logger, rootGroup *echo.Group, conf config.APIConf, requestCache request.Storage, ruleService rule.Service) error {
+func addRoutes(
+	logger *zerolog.Logger,
+	rootGroup *echo.Group,
+	conf config.APIConf,
+	requestCache request.Storage,
+	serverService server.Service,
+	ruleService rule.Service,
+) error {
 
 	if conf.AssetsDirectory != "" {
 		rootGroup.Static("/", conf.AssetsDirectory)
@@ -70,6 +86,7 @@ func addRoutes(logger *zerolog.Logger, rootGroup *echo.Group, conf config.APICon
 	requestApi.RegisterRoutes(srv, api)
 
 	ruleApi.RegisterRoutes(ruleService, api)
+	serverApi.RegisterRoutes(serverService, api)
 
 	return nil
 }

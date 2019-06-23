@@ -3,7 +3,6 @@ package proxy
 import (
 	"github.com/aldas/xroad-mock-proxy/pkg/common/server"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/config"
-	"github.com/aldas/xroad-mock-proxy/pkg/proxy/domain"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/request"
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/rule"
 	proxyserver "github.com/aldas/xroad-mock-proxy/pkg/proxy/server"
@@ -17,8 +16,8 @@ import (
 func Start(
 	logger *zerolog.Logger,
 	serverConfig config.ServerConf,
-	proxyServerConfigs config.ProxyServerConfigs,
 	requestCache request.Storage,
+	serverService proxyserver.AccessorService,
 	ruleService rule.Service,
 	wg *sync.WaitGroup,
 ) {
@@ -26,7 +25,7 @@ func Start(
 
 	go func() {
 		defer wg.Done()
-		err := serve(logger, serverConfig, proxyServerConfigs, requestCache, ruleService)
+		err := serve(logger, serverConfig, requestCache, serverService, ruleService)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("failed to start proxy server")
 		}
@@ -37,15 +36,15 @@ func Start(
 func serve(
 	logger *zerolog.Logger,
 	serverConfig config.ServerConf,
-	proxyServerConfigs config.ProxyServerConfigs,
 	requestCache request.Storage,
+	serverService proxyserver.AccessorService,
 	ruleService rule.Service,
 ) error {
 	e := server.New()
 
 	e.GET("/", echo.WrapHandler(defaultHandler{logger: logger}))
 
-	proxyHandler, err := createProxyHandler(logger, proxyServerConfigs, requestCache, ruleService)
+	proxyHandler, err := createProxyHandler(logger, requestCache, serverService, ruleService)
 	if err != nil {
 		return err
 	}
@@ -75,16 +74,10 @@ func serve(
 
 func createProxyHandler(
 	logger *zerolog.Logger,
-	proxyServerConfigs config.ProxyServerConfigs,
 	requestCache request.Storage,
+	serverService proxyserver.AccessorService,
 	ruleService rule.Service,
 ) (http.Handler, error) {
-	servers, err := domain.ConvertProxyServers(proxyServerConfigs)
-	if err != nil {
-		return nil, err
-	}
-	serverService := proxyserver.NewService(logger, servers)
-
 	return NewProxyHandler(logger, serverService, ruleService, requestCache)
 }
 

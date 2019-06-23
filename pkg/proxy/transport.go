@@ -9,7 +9,7 @@ import (
 type transportSwitcher struct {
 	logger        *zerolog.Logger
 	Transport     http.RoundTripper
-	serverService server.Service
+	serverService server.AccessorService
 }
 
 // RoundTrip is to use different Transports depending on request url. This is needed in when X-road server uses TLS and

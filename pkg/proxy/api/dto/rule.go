@@ -5,6 +5,7 @@ import (
 	"github.com/aldas/xroad-mock-proxy/pkg/proxy/domain"
 	"github.com/pkg/errors"
 	"regexp"
+	"strings"
 )
 
 // RuleDTO is DTO for rule
@@ -77,7 +78,7 @@ func ToRule(r RuleDTO) (domain.Rule, error) {
 
 	return domain.Rule{
 		ID:                   r.ID,
-		Server:               r.Server,
+		Server:               strings.ToLower(r.Server),
 		Service:              r.Service,
 		Priority:             r.Priority,
 		MatcherRemoteAddr:    r.MatcherRemoteAddr,

@@ -72,7 +72,7 @@ func convertRule(conf config.RuleConf) (Rule, error) {
 	}
 
 	return Rule{
-		Server:               conf.Server,
+		Server:               strings.ToLower(conf.Server),
 		Service:              conf.Service,
 		Priority:             conf.Priority,
 		MatcherRemoteAddr:    conf.MatcherRemoteAddr,

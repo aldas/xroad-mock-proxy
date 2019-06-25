@@ -48,6 +48,7 @@ func serve(logger *zerolog.Logger, conf config.MockConf) error {
 		rootGroup.Static("/", conf.WebAssetsDirectory)
 	}
 
+	logger.Info().Msg("start serving mock server")
 	err = server.Start(e, &server.Config{
 		Address:             conf.Address,
 		ReadTimeoutSeconds:  conf.ReadTimeoutSeconds,

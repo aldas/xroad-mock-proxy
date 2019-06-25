@@ -55,6 +55,7 @@ func serve(
 	}
 	e.POST(contextPath, echo.WrapHandler(proxyHandler))
 
+	logger.Info().Msg("start serving proxy server")
 	err = server.Start(e, &server.Config{
 		Address:             serverConfig.Address,
 		ReadTimeoutSeconds:  serverConfig.ReadTimeoutSeconds,

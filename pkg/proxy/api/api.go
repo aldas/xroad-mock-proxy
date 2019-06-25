@@ -49,6 +49,7 @@ func serve(
 		return err
 	}
 
+	logger.Info().Msg("start serving proxy api")
 	err := commonServer.Start(e, &commonServer.Config{
 		Address:             conf.Address,
 		ReadTimeoutSeconds:  conf.ReadTimeoutSeconds,

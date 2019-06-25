@@ -94,14 +94,14 @@ func loadPrivateKey(keyBytes []byte, password string) ([]byte, error) {
 		}
 
 		if x509.IsEncryptedPEMBlock(v) {
-			pkey, err := x509.DecryptPEMBlock(v, []byte(password))
+			pkeyTmp, err := x509.DecryptPEMBlock(v, []byte(password))
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to decrypt private key with password.")
 			}
 
 			pkey = pem.EncodeToMemory(&pem.Block{
 				Type:  v.Type,
-				Bytes: pkey,
+				Bytes: pkeyTmp,
 			})
 		} else {
 			pkey = pem.EncodeToMemory(v)

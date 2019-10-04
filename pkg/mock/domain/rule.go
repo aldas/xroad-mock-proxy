@@ -121,7 +121,7 @@ func (r Rules) MatchService(service string) Rules {
 
 	result := make(Rules, 0)
 	for _, rule := range r {
-		if rule.Service == service {
+		if strings.ToLower(rule.Service) == service {
 			result = append(result, rule)
 		}
 	}
